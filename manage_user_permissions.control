@@ -1,0 +1,6 @@
+# manage_user_permissions.control
+comment = 'Extension for managing user permissions dynamically'
+default_version = '1.0'
+relocatable = false
+module_pathname = '$libdir/manage_user_permissions'
+
