@@ -8,7 +8,7 @@ URL:            http://example.com/your_project_homepage
 Source0:        %{name}-%{version}.tar.gz
 #Source1:        manage_user_permissions--1.0.sql
 
-BuildRequires:  postgresql13-devel
+BuildRequires:  postgresql-devel
 Requires:       postgresql
 
 %description
@@ -26,13 +26,13 @@ tar -xzvf %{_sourcedir}/%{name}-%{version}.tar.gz -C %{_builddir}/%{name}-%{vers
 
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}/usr/pgsql-13/share/extension
-install -m 644 ./%{name}-%{version}/manage_user_permissions--1.1.sql %{buildroot}/usr/pgsql-13/share/extension
-install -m 644 ./%{name}-%{version}/manage_user_permissions.control %{buildroot}/usr/pgsql-13/share/extension
+mkdir -p %{buildroot}/usr/share/pgsql/extension/
+install -m 644 ./%{name}-%{version}/manage_user_permissions--1.1.sql %{buildroot}/usr/share/pgsql/extension/
+install -m 644 ./%{name}-%{version}/manage_user_permissions.control %{buildroot}/usr/share/pgsql/extension/
 
 %files
-/usr/pgsql-13/share/extension/manage_user_permissions--1.1.sql
-/usr/pgsql-13/share/extension/manage_user_permissions.control
+/usr/share/pgsql/extension/manage_user_permissions--1.1.sql
+/usr/share/pgsql/extension/manage_user_permissions.control
 
 %changelog
 * Wed Nov 22 2024 Your Name Sheikh Wasiu Al Hasib - 1.1-1
