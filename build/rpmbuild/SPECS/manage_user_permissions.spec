@@ -1,5 +1,5 @@
 Name:           manage_user_permissions
-Version:        1.0
+Version:        1.1
 Release:        1%{?dist}
 Summary:        PostgreSQL extension for managing user permissions
 
@@ -27,14 +27,14 @@ tar -xzvf %{_sourcedir}/%{name}-%{version}.tar.gz -C %{_builddir}/%{name}-%{vers
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/pgsql/extension/
-install -m 644 ./%{name}-%{version}/manage_user_permissions--1.0.sql %{buildroot}/usr/share/pgsql/extension/
+install -m 644 ./%{name}-%{version}/manage_user_permissions--1.1.sql %{buildroot}/usr/share/pgsql/extension/
 install -m 644 ./%{name}-%{version}/manage_user_permissions.control %{buildroot}/usr/share/pgsql/extension/
 
 %files
-/usr/share/pgsql/extension/manage_user_permissions--1.0.sql
+/usr/share/pgsql/extension/manage_user_permissions--1.1.sql
 /usr/share/pgsql/extension/manage_user_permissions.control
 
 %changelog
-* Wed Nov 01 2023 Your Name Sheikh Wasiu Al Hasib - 1.0-1
+* Wed Nov 22 2024 Your Name Sheikh Wasiu Al Hasib - 1.1-1
 - Initial RPM release of manage_user_permissions PostgreSQL extension.
 
