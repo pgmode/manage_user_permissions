@@ -1,9 +1,6 @@
 # manage_user_permissions
 PostgreSQL Dynamic Permission Management System using manager_user_permissions
 
-To create a well-documented GitHub repository for your `manage_user_permissions` PostgreSQL extension, you'll need a clear and informative README file. Below is a template that outlines the key information potential users might look for. This README template includes an overview of the function, its purpose, how to install it, and examples of how to use it.
-
-### README.md for `manage_user_permissions` PostgreSQL Extension
 
 ```markdown
 # Manage User Permissions for PostgreSQL
