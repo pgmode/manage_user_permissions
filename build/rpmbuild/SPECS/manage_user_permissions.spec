@@ -1,40 +1,56 @@
+%global debug_package %{nil}
+
+%{!?pg_version: %global pg_version 15}
+
+%{!?sql_version: %global sql_version 1.0}
+
 Name:           manage_user_permissions
-Version:        1.1
-Release:        1%{?dist}
+Version:        %{sql_version}
+Release:        1.pg%{pg_version}%{?dist}
 Summary:        PostgreSQL extension for managing user permissions
 
 License:        GPL
 URL:            http://example.com/your_project_homepage
 Source0:        %{name}-%{version}.tar.gz
-#Source1:        manage_user_permissions--1.0.sql
 
-BuildRequires:  postgresql16-devel
-Requires:       postgresql
+BuildRequires:  postgresql%{pg_version}-devel
+Requires:       postgresql%{pg_version}
 
 %description
 This package provides the manage_user_permissions extension for PostgreSQL,
 which allows for advanced user management capabilities within the database system.
 
+%prep
+%setup -c -T
+echo "Building for PostgreSQL version: %{pg_version}"
+tar -xzvf %{_sourcedir}/%{name}-%{version}.tar.gz -C %{_builddir}
+sed -i "s/pgsql-[0-9]*/pgsql-%{pg_version}/" %{_builddir}/%{name}-%{version}/Makefile
+sed -i "s/manage_user_permissions--[0-9]\+\.[0-9]\+\.sql/manage_user_permissions--%{sql_version}.sql/" %{_builddir}/%{name}-%{version}/Makefile
+
+# Dynamically rename the SQL file inside the extracted directory
+old_file_name="manage_user_permissions--[0-9]\+\.[0-9]\+\.sql"
+new_file_name="manage_user_permissions--%{sql_version}.sql"
+
+# Find and rename the file
+find %{_builddir}/%{name}-%{version}/ -type f -name "manage_user_permissions--*.sql" -exec mv {} %{_builddir}/%{name}-%{version}/$new_file_name \;
+
 
 %build
 # Assuming no compilation is needed, only file preparation or no operation here.
 # If the extension needs compiling or additional preparation, add those commands here.
-
-%prep
-%setup -c -T
-tar -xzvf %{_sourcedir}/%{name}-%{version}.tar.gz -C %{_builddir}/%{name}-%{version}
+echo "Building extension for PostgreSQL %{pg_version}"
 
 %install
-rm -rf %{buildroot}
-mkdir -p %{buildroot}/usr/pgsql-16/share/extension
-install -m 644 ./%{name}-%{version}/manage_user_permissions--1.1.sql %{buildroot}/usr/pgsql-16/share/extension
-install -m 644 ./%{name}-%{version}/manage_user_permissions.control %{buildroot}/usr/pgsql-16/share/extension
+#rm -rf %{buildroot}
+mkdir -p %{buildroot}/usr/pgsql-%{pg_version}/share/extension
+install -m 644 %{_builddir}/%{name}-%{version}/manage_user_permissions--%{sql_version}.sql %{buildroot}/usr/pgsql-%{pg_version}/share/extension
+install -m 644 %{_builddir}/%{name}-%{version}/manage_user_permissions.control %{buildroot}/usr/pgsql-%{pg_version}/share/extension
 
 %files
-/usr/pgsql-16/share/extension/manage_user_permissions--1.1.sql
-/usr/pgsql-16/share/extension/manage_user_permissions.control
+/usr/pgsql-%{pg_version}/share/extension/manage_user_permissions--%{sql_version}.sql
+/usr/pgsql-%{pg_version}/share/extension/manage_user_permissions.control
 
 %changelog
-* Wed Nov 22 2024 Your Name Sheikh Wasiu Al Hasib - 1.1-1
+* Fri Nov 22 2024 Your Name <you@example.com> - %{sql_version}-1
 - Initial RPM release of manage_user_permissions PostgreSQL extension.
 

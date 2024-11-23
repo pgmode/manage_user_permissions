@@ -91,4 +91,3 @@ If you have any questions or feedback, please open an issue in the GitHub reposi
 - **Issue Tracking**: Utilize GitHub issues to track bugs, feature requests, and discussions.
 - **Enhancements**: Consider adding a `CONTRIBUTING.md` file to provide guidelines on how others can contribute to your project.
 
-By following this template, you will provide potential users and contributors with all the necessary information to effectively use and collaborate on your PostgreSQL extension.
