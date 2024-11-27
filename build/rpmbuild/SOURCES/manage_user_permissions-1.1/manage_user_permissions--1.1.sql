@@ -73,6 +73,10 @@ BEGIN
                     PERFORM dblink_exec(connection_string, 'GRANT pg_read_all_stats TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_read_all_settings TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_monitor TO ' || quote_ident(user_name) || ';');
+                WHEN 'user_login' THEN
+                    PERFORM dblink_exec(connection_string, 'ALTER USER ' || quote_ident(user_name) || ' WITH LOGIN;');
+                WHEN 'connect_schema' THEN
+                    PERFORM dblink_exec(connection_string, 'GRANT CONNECT ON DATABASE ' || quote_ident(database_name) || ' TO ' || quote_ident(schema_name) || ';');
                 WHEN 'all' THEN
                     -- Revoke schema usage and all privileges
                     PERFORM dblink_exec(connection_string, 'GRANT USAGE ON SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
@@ -84,8 +88,6 @@ BEGIN
                     PERFORM dblink_exec(connection_string, 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'ALTER DEFAULT PRIVILEGES FOR ROLE '||  quote_ident(db_owner)  || ' IN SCHEMA ' ||quote_ident(schema_name) ||' GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO '||quote_ident(user_name) ||';');
-                WHEN 'user_login' THEN
-                    PERFORM dblink_exec(connection_string, 'ALTER USER ' || quote_ident(user_name) || ' WITH LOGIN;');
                 ELSE
                     RAISE NOTICE 'Unsupported permissions type: %.', permissions;
             END CASE;
@@ -114,11 +116,13 @@ BEGIN
                     -- Reassign and drop ownership
                     -- PERFORM dblink_exec(connection_string, 'REASSIGN OWNED BY ' || quote_ident(user_name) || ' TO postgres;');
                     -- PERFORM dblink_exec(connection_string, 'DROP OWNED BY ' || quote_ident(user_name) || ';');
+                WHEN 'disconnect_schema' THEN
+                    PERFORM dblink_exec(connection_string, 'REVOKE CONNECT ON DATABASE ' || quote_ident(database_name) || ' FROM ' || quote_ident(schema_name) || ';');
                 WHEN 'all' THEN
                     -- Revoke schema usage and all privileges
                     PERFORM dblink_exec(connection_string, 'REVOKE USAGE ON SCHEMA ' || quote_ident(schema_name) || ' FROM ' || quote_ident(user_name) || ';');
                     -- Revoke database connect
-                    PERFORM dblink_exec(connection_string, 'REVOKE CONNECT ON DATABASE ' || quote_ident(database_name) || ' FROM ' || quote_ident(user_name) || ';');
+                    PERFORM dblink_exec(connection_string, 'REVOKE CONNECT ON DATABASE ' || quote_ident(database_name) || ' FROM ' || quote_ident(schema_name) || ';');
                     -- Revoke all privileges on tables, sequences, and functions
                     PERFORM dblink_exec(connection_string, 'REVOKE pg_read_all_data FROM ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'REVOKE pg_write_all_data FROM ' || quote_ident(user_name) || ';');
