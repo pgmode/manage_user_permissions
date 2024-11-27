@@ -10,7 +10,7 @@ Release:        1.pg%{pg_version}%{?dist}
 Summary:        PostgreSQL extension for managing user permissions
 
 License:        GPL
-URL:            http://example.com/your_project_homepage
+URL:            https://github.com/wasiualhasib/manage_user_permissions
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  postgresql%{pg_version}-devel
@@ -26,6 +26,7 @@ echo "Building for PostgreSQL version: %{pg_version}"
 tar -xzvf %{_sourcedir}/%{name}-%{version}.tar.gz -C %{_builddir}
 sed -i "s/pgsql-[0-9]*/pgsql-%{pg_version}/" %{_builddir}/%{name}-%{version}/Makefile
 sed -i "s/manage_user_permissions--[0-9]\+\.[0-9]\+\.sql/manage_user_permissions--%{sql_version}.sql/" %{_builddir}/%{name}-%{version}/Makefile
+sed -i "s/^default_version = '.*'/default_version = '%{sql_version}'/"  %{_builddir}/%{name}-%{version}/manage_user_permissions.control
 
 # Dynamically rename the SQL file inside the extracted directory
 old_file_name="manage_user_permissions--[0-9]\+\.[0-9]\+\.sql"
@@ -51,6 +52,6 @@ install -m 644 %{_builddir}/%{name}-%{version}/manage_user_permissions.control %
 /usr/pgsql-%{pg_version}/share/extension/manage_user_permissions.control
 
 %changelog
-* Fri Nov 22 2024 Your Name <you@example.com> - %{sql_version}-1
+* Fri Nov 22 2024 Your Name Sheikh Wasiu Al Hasib - %{sql_version}-1
 - Initial RPM release of manage_user_permissions PostgreSQL extension.
 
