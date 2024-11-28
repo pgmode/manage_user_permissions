@@ -1,3 +1,35 @@
+CREATE OR REPLACE FUNCTION manage_user_permissions(action TEXT)
+RETURNS TEXT AS $$
+BEGIN
+    IF action = 'help' THEN
+        RETURN 'Usage of manage_user_permissions:
+    Syntax:
+        manage_user_permissions(user_name TEXT, database_name TEXT, permissions TEXT, action TEXT, schema_name TEXT DEFAULT ''public'')
+    Parameters:
+        user_name: The name of the user for whom permissions are being managed.
+        database_name: The name of the database in which the permissions are applied.
+        permissions: The type of permissions to grant or revoke. Supported values are:
+            - data_loader
+            - data_read
+            - data_write
+            - data_update_only
+            - data_monitor
+            - user_login
+            - connect_schema
+            - all
+        action: Specify ''grant'', ''revoke'', or ''help'' (this menu).
+        schema_name: The schema to apply permissions (default is ''public'').
+    Example:
+        SELECT manage_user_permissions(''test_user'', ''test_db'', ''data_read'', ''grant'', ''public'');
+        SELECT manage_user_permissions(''help'');
+    ';
+    ELSE
+        RAISE EXCEPTION 'Unsupported action for help function: %. Please use ''help''.', action;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION manage_user_permissions(
     user_name TEXT,
     database_name TEXT ,
@@ -12,24 +44,6 @@ DECLARE
     current_port INT;
     db_owner TEXT;
 BEGIN
-   IF action = 'help' THEN
-        RAISE NOTICE 'Usage of manage_user_permissions:';
-        RAISE NOTICE '    user_name: The name of the user for whom permissions are being managed.';
-        RAISE NOTICE '    database_name: The name of the database in which the permissions are applied.';
-        RAISE NOTICE '    permissions: The type of permissions to grant or revoke. Supported values are:';
-        RAISE NOTICE '        - data_loader';
-        RAISE NOTICE '        - data_read';
-        RAISE NOTICE '        - data_write';
-        RAISE NOTICE '        - data_update_only';
-        RAISE NOTICE '        - data_monitor';
-        RAISE NOTICE '        - user_login';
-        RAISE NOTICE '        - connect_schema';
-        RAISE NOTICE '        - all';
-        RAISE NOTICE '    action: Specify "grant", "revoke", or "help" (this menu).';
-        RAISE NOTICE '    schema_name: The schema to apply permissions (default is "public").';
-        RETURN;
-    END IF;
-
 
 
     -- Get the current port from pg_settings
@@ -66,24 +80,29 @@ BEGIN
         WHEN 'grant' THEN
             CASE permissions
                 WHEN 'data_loader' THEN
+                    PERFORM dblink_exec(connection_string, 'GRANT CONNECT ON DATABASE ' || quote_ident(database_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT USAGE ON SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_read_server_files TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_write_server_files TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                 WHEN 'data_read' THEN
+                    PERFORM dblink_exec(connection_string, 'GRANT CONNECT ON DATABASE ' || quote_ident(database_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT USAGE ON SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_read_all_data TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'ALTER DEFAULT PRIVILEGES FOR ROLE '||  quote_ident(db_owner)  || ' IN SCHEMA ' ||quote_ident(schema_name) ||' GRANT SELECT ON TABLES TO '||quote_ident(user_name) ||';');
                 WHEN 'data_write' THEN
+                    PERFORM dblink_exec(connection_string, 'GRANT CONNECT ON DATABASE ' || quote_ident(database_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT USAGE ON SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_read_all_data TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_write_all_data TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'ALTER DEFAULT PRIVILEGES FOR ROLE '||  quote_ident(db_owner)  || ' IN SCHEMA ' ||quote_ident(schema_name) ||' GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO '||quote_ident(user_name) ||';');
                 WHEN 'data_update_only' THEN
+                    PERFORM dblink_exec(connection_string, 'GRANT CONNECT ON DATABASE ' || quote_ident(database_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT USAGE ON SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT SELECT, UPDATE ON ALL TABLES IN SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'ALTER DEFAULT PRIVILEGES FOR ROLE '||  quote_ident(db_owner)  || ' IN SCHEMA ' ||quote_ident(schema_name) ||' GRANT SELECT, UPDATE ON TABLES TO '||quote_ident(user_name) ||';');
                 WHEN 'data_monitor' THEN
+                    PERFORM dblink_exec(connection_string, 'GRANT CONNECT ON DATABASE ' || quote_ident(database_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT USAGE ON SCHEMA ' || quote_ident(schema_name) || ' TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_stat_scan_tables TO ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'GRANT pg_read_all_stats TO ' || quote_ident(user_name) || ';');
@@ -120,7 +139,7 @@ BEGIN
                     PERFORM dblink_exec(connection_string, 'REVOKE pg_read_all_data FROM ' || quote_ident(user_name) || ';');
                 WHEN 'data_write' THEN
                     PERFORM dblink_exec(connection_string, 'REVOKE USAGE ON SCHEMA ' || quote_ident(schema_name) || ' FROM ' || quote_ident(user_name) || ';');
-                    PERFORM dblink_exec(connection_string, 'REVOKE pg_read_all_data FROM ' || quote_ident(user_name) || ';');
+                    -- PERFORM dblink_exec(connection_string, 'REVOKE pg_read_all_data FROM ' || quote_ident(user_name) || ';');
                     PERFORM dblink_exec(connection_string, 'REVOKE pg_write_all_data FROM ' || quote_ident(user_name) || ';');
                 WHEN 'data_update_only' THEN
                     PERFORM dblink_exec(connection_string, 'REVOKE USAGE ON SCHEMA ' || quote_ident(schema_name) || ' FROM ' || quote_ident(user_name) || ';');
