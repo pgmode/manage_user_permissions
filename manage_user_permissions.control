@@ -1,5 +1,5 @@
 # manage_user_permissions.control
-comment = 'Managing user permissions  example: SELECT manage_user_permissions(user_name, db_name , permission_name, acton_name, schema_name);'
+comment = 'Managing user permissions  example: SELECT manage_user_permissions(action TEXT);  action=help'
 default_version = '1.2'
 relocatable = false
 module_pathname = '$libdir/manage_user_permissions'
