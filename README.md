@@ -1,93 +1,153 @@
-# manage_user_permissions
-PostgreSQL Dynamic Permission Management System using manager_user_permissions
+# Manage User Permissions PostgreSQL Extension
 
+The `manage_user_permissions` PostgreSQL extension simplifies the process of creating users, databases, and managing permissions dynamically. This extension provides functions to handle common tasks such as creating databases, granting or revoking permissions, and helping with usage details.
 
-```markdown
-# Manage User Permissions for PostgreSQL
-
-## Overview
-
-The `manage_user_permissions` function is a PostgreSQL extension designed to simplify and automate the management of user permissions within a PostgreSQL database. This function allows database administrators to grant or revoke various types of permissions dynamically based on predefined roles.
+---
 
 ## Features
 
-- **Dynamic Permission Management**: Easily grant or revoke permissions based on user roles.
-- **Support for Multiple Schemas**: Operates across different schemas within the database.
-- **Flexible Permission Sets**: Includes support for data loaders, data readers, data writers, and more.
+1. **Create Databases and Users Dynamically**  
+   - Automatically creates a database and its owner with a secure, randomly generated password.
 
-## Prerequisites
+2. **Grant or Revoke Permissions**  
+   - Assign or revoke fine-grained permissions such as data reading, writing, updating, monitoring, schema connection, and more.
 
-Before you can use the `manage_user_permissions` function, make sure you have:
+3. **Help Functionality**  
+   - Provides detailed usage instructions for all supported operations.
 
-- PostgreSQL 10 or later.
-- Access to a superuser role in the PostgreSQL instance.
+---
+
+## Functions
+
+### 1. **Help Function**
+   ```sql
+   SELECT manage_user_permissions('help');
+   ```
+   Provides usage details, including supported operations, parameters, and examples.
+
+---
+
+### 2. **Create User and Database**
+   ```sql
+   SELECT manage_user_permissions('user_name', 'database_name');
+   ```
+   - Automatically creates a user with a secure random password.
+   - Creates the specified database with the user as the owner.
+   - Returns the generated password for the created user.
+
+---
+
+### 3. **Grant or Revoke Permissions**
+   ```sql
+   SELECT manage_user_permissions(
+       'user_name',
+       'database_name',
+       'permissions',
+       'action',
+       'schema_name'
+   );
+   ```
+   - **Permissions**: `data_loader`, `data_read`, `data_write`, `data_update_only`, `data_monitor`, `user_login`, `connect_schema`, `all`.
+   - **Actions**: `grant` or `revoke`.
+   - **Schema Name**: Defaults to `public` if not specified.
+
+---
 
 ## Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/yourusername/manage_user_permissions.git
-   cd manage_user_permissions
+### Step 1: Install the RPM Package
+
+1. Download the latest version of the RPM from your repository or local source it also support PostgreSQL 13 or later:
+   ```
+   manage_user_permissions-1.3-1.pg13.el9.x86_64.rpm
+   manage_user_permissions-1.3-1.pg14.el9.x86_64.rpm
+   manage_user_permissions-1.3-1.pg15.el9.x86_64.rpm
+   manage_user_permissions-1.3-1.pg16.el9.x86_64.rpm
    ```
 
-2. **Execute the SQL Script**:
-   Navigate to the directory containing `manage_user_permissions--1.0.sql` and run it using:
+2. Install the RPM package:
    ```bash
-   psql -U your_superuser -d your_database -f manage_user_permissions--1.0.sql
+   sudo rpm -ivh manage_user_permissions-1.3-1.pg13.el9.x86_64.rpm
+   sudo rpm -ivh manage_user_permissions-1.3-1.pg14.el9.x86_64.rpm
+   sudo rpm -ivh manage_user_permissions-1.3-1.pg15.el9.x86_64.rpm
+   sudo rpm -ivh manage_user_permissions-1.3-1.pg16.el9.x86_64.rpm
    ```
 
-3. **Verify Installation**:
-   Connect to your database and check if the function exists:
+3. Verify installation:
+   ```bash
+   rpm -q manage_user_permissions
+   ```
+
+---
+
+### Step 2: Enable the Extension
+
+1. Connect to your PostgreSQL instance:
+   ```bash
+   psql -U postgres
+   ```
+
+2. Enable the extension in your database:
    ```sql
-   SELECT * FROM pg_proc WHERE proname = 'manage_user_permissions';
+   CREATE EXTENSION manage_user_permissions;
    ```
 
-## Usage
+3. Verify the extension is enabled:
+   ```sql
+   \dx
+   ```
 
-### Granting Permissions
+---
 
-To grant permissions to a user:
+## Usage Examples
 
-```sql
-SELECT manage_user_permissions(
-    'username',           -- User name
-    'database_name',      -- Database name
-    'data_loader',        -- Permissions type
-    'grant',              -- Action
-    'public'              -- Schema (optional, default is 'public')
-);
-```
+1. **Get Help**:
+   ```sql
+   SELECT manage_user_permissions('help');
+   ```
 
-### Revoking Permissions
+2. **Create a User and Database**:
+   ```sql
+   SELECT manage_user_permissions('test_user', 'test_db');
+   ```
 
-To revoke permissions from a user:
+3. **Grant Data Read Permission**:
+   ```sql
+   SELECT manage_user_permissions(
+       'test_user',
+       'test_db',
+       'data_read',
+       'grant',
+       'public'
+   );
+   ```
 
-```sql
-SELECT manage_user_permissions(
-    'username',           -- User name
-    'database_name',      -- Database name
-    'data_loader',        -- Permissions type
-    'revoke',             -- Action
-    'public'              -- Schema (optional, default is 'public')
-);
-```
+4. **Revoke User Login**:
+   ```sql
+   SELECT manage_user_permissions(
+       'test_user',
+       'test_db',
+       'user_login',
+       'revoke',
+       'public'
+   );
+   ```
+
+---
+
+## Notes
+
+- Ensure the `dblink` extension is installed and enabled on your PostgreSQL instance:
+   ```sql
+   CREATE EXTENSION dblink;
+   ```
+
+- Replace `yourpassword` with a secure password for the `postgres` user in the scripts.
+
+- Manage access to the generated user passwords securely.
+
+---
 
 ## Contributing
 
-Contributions to this project are welcome! Please fork the repository and submit pull requests with any enhancements.
-
-## License
-
-This project is licensed under the GPL. For more details, see the LICENSE file in the repository.
-
-## Contact
-
-If you have any questions or feedback, please open an issue in the GitHub repository or contact us directly at wasiualhasib@gmail.com.
-```
-
-### Additional Tips
-
-- **GitHub Repository Setup**: Make sure your GitHub repository is well-organized. Include the SQL files in the repository and perhaps a `LICENSE` file if you are open-sourcing the software under the GPL as stated.
-- **Issue Tracking**: Utilize GitHub issues to track bugs, feature requests, and discussions.
-- **Enhancements**: Consider adding a `CONTRIBUTING.md` file to provide guidelines on how others can contribute to your project.
-
+If you encounter issues or have feature requests, feel free to open an issue or contribute to the GitHub repository.
