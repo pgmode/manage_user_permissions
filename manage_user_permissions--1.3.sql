@@ -9,23 +9,81 @@ BEGIN
         user_name: The name of the user for whom permissions are being managed.
         database_name: The name of the database in which the permissions are applied.
         permissions: The type of permissions to grant or revoke. Supported values are:
-            - data_loader
-            - data_read
-            - data_write
-            - data_update_only
-            - data_monitor
-            - user_login
-            - connect_schema
-            - all
-        action: Specify ''grant'', ''revoke'', or ''help'' (this menu).
-        schema_name: The schema to apply permissions (default is ''public'').
+	    - create_db --This will allow to create database and database owner.
+            - data_loader -- This will allow or revoke user to export and import data to and from files.
+            - data_read  -- This will allow or revoke  user to read.
+            - data_write -- This will allow or revoke user to give write permission.
+            - data_update_only -- This will allow or revoke user only update and read permission.
+            - data_monitor  -- This will give user to monitor or disallow.
+            - user_login  -- This will allow or revoke login.
+            - connect_schema -- This will grant or revoke schema connect
+            - all -- All permission
+        action: Specify ''grant'', ''revoke'', or ''help'' (this menu). -- You can allow or disallow using grant and revoke
+        schema_name: The schema to apply permissions (default is ''public''). -- Here default is public , if not you need to mentions it.
     Example:
-        SELECT manage_user_permissions(''test_user'', ''test_db'', ''data_read'', ''grant'', ''public'');
-        SELECT manage_user_permissions(''help'');
+        SELECT manage_user_permissions(''help'');  -- To get help 
+        SELECT manage_user_permissions(''user_name'',''db_name''); -- To create database and owner
+        SELECT manage_user_permissions(''test_user'', ''test_db'', ''data_read'', ''grant'', ''public''); -- To give other user permission.
     ';
     ELSE
         RAISE EXCEPTION 'Unsupported action for help function: %. Please use ''help''.', action;
     END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION manage_user_permissions(
+    user_name TEXT,
+    database_name TEXT
+) RETURNS TEXT AS $$
+DECLARE
+    db_exists BOOLEAN;
+    user_exists BOOLEAN;
+    random_password TEXT;
+    connection_string TEXT;
+    server_port TEXT;
+BEGIN
+    -- Get the current PostgreSQL port dynamically
+    SELECT current_setting('port') INTO server_port;
+
+    -- Check if the database exists
+    SELECT EXISTS (
+        SELECT 1 FROM pg_database WHERE datname = database_name
+    ) INTO db_exists;
+
+    IF  db_exists THEN
+        RETURN format('Database "%s" already exist. Please check the database first.', database_name);
+    END IF;
+
+    -- Check if the user exists
+    SELECT EXISTS (
+        SELECT 1 FROM pg_roles WHERE rolname = user_name
+    ) INTO user_exists;
+
+    IF user_exists THEN
+        RETURN format('User "%s" already exist.', user_name);
+    END IF;
+
+    -- Generate a random password
+    random_password := substr(md5(random()::text || clock_timestamp()::text), 1, 16);
+
+    -- Define the dblink connection string with the dynamic port
+    connection_string := 'dbname=postgres user=postgres password=yourpassword host=localhost port=' || server_port;
+
+    -- Create the user with the random password using dblink
+    PERFORM dblink_exec(
+        connection_string,
+        'CREATE USER ' || quote_ident(user_name) || ' WITH PASSWORD ' || quote_literal(random_password) || ';'
+    );
+
+    -- Create the database with the new user as owner using dblink
+    PERFORM dblink_exec(
+        connection_string,
+        'CREATE DATABASE ' || quote_ident(database_name) || ' OWNER ' || quote_ident(user_name) || ';'
+    );
+
+    -- Return the generated password for the created user
+    RETURN random_password;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -43,7 +101,6 @@ DECLARE
     connection_string TEXT;
     current_port INT;
     db_owner TEXT;
-
 BEGIN
 
 
