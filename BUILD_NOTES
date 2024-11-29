@@ -1,3 +1,0 @@
-
-# Execuite dynamically postgersql version and sql file version
-rpmbuild -ba ~/rpmbuild/SPECS/manage_user_permissions.spec --define="pg_version 14" --define="sql_version 1.1"
