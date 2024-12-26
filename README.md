@@ -59,18 +59,18 @@ The `manage_user_permissions` PostgreSQL extension simplifies the process of cre
 
 1. Download the latest version of the RPM from your repository or local source it also support PostgreSQL 13 or later:
    ```
-   manage_user_permissions-1.3-1.pg13.el9.x86_64.rpm
-   manage_user_permissions-1.3-1.pg14.el9.x86_64.rpm
-   manage_user_permissions-1.3-1.pg15.el9.x86_64.rpm
-   manage_user_permissions-1.3-1.pg16.el9.x86_64.rpm
+   manage_user_permissions-1.4-1.pg13.el9.x86_64.rpm
+   manage_user_permissions-1.4-1.pg14.el9.x86_64.rpm
+   manage_user_permissions-1.4-1.pg15.el9.x86_64.rpm
+   manage_user_permissions-1.4-1.pg16.el9.x86_64.rpm
    ```
 
 2. Install the RPM package:
    ```bash
-   sudo rpm -ivh manage_user_permissions-1.3-1.pg13.el9.x86_64.rpm
-   sudo rpm -ivh manage_user_permissions-1.3-1.pg14.el9.x86_64.rpm
-   sudo rpm -ivh manage_user_permissions-1.3-1.pg15.el9.x86_64.rpm
-   sudo rpm -ivh manage_user_permissions-1.3-1.pg16.el9.x86_64.rpm
+   sudo rpm -ivh manage_user_permissions-1.4-1.pg13.el9.x86_64.rpm
+   sudo rpm -ivh manage_user_permissions-1.4-1.pg14.el9.x86_64.rpm
+   sudo rpm -ivh manage_user_permissions-1.4-1.pg15.el9.x86_64.rpm
+   sudo rpm -ivh manage_user_permissions-1.4-1.pg16.el9.x86_64.rpm
    ```
 
 3. Verify installation:
